@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: network_project_container
+    image: network_project_image
     tty: true
     volumes:
       - .:/home/ohsj3781/workspace
-    stdin_open: true
     user: "ohsj3781"
