@@ -1,0 +1,11 @@
+services:
+  network_project:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: network_project_container
+    tty: true
+    volumes:
+      - .:/home/ohsj3781/workspace
+    stdin_open: true
+    user: "ohsj3781"
