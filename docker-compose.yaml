@@ -3,9 +3,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - USER_PASSWORD=${USER_PASSWORD}
+      
     container_name: network_project_container
     image: network_project_image
     tty: true
     volumes:
       - .:/home/ohsj3781/workspace
     user: "ohsj3781"
+    env_file:
+      - .env
+   

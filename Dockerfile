@@ -1,24 +1,31 @@
-# Use the official Ubuntu 20.04 LTS as the base image
 FROM ubuntu:20.04
 
-# Set environment variables to avoid user interaction during package installation
+# Set non-interactive mode to prevent prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update the package list and install the required packages
-RUN apt update && \
-    apt install -y vim git gcc g++ ctags wget sudo python-is-python3 tcpdump&& \
-    wget https://www.nsnam.org/release/ns-allinone-3.29.tar.bz2 && \
-    tar -xvf ns-allinone-3.29.tar.bz2 && \
-    cd ns-allinone-3.29 && \
-    ./build.py --enable-examples --enable-tests && \
-    cd ns-3.29 && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install necessary packages
+RUN apt update && apt install -y vim git gcc g++ ctags wget sudo python-is-python3 tcpdump bzip2
 
-RUN useradd -ms /bin/bash ohsj3781 && echo "ohsj3781:3781" | chpasswd
+ARG USER_PASSWORD
+
+# Create user
+RUN useradd -ms /bin/bash ohsj3781 && echo "ohsj3781:$USER_PASSWORD" | chpasswd
+
+# Create workspace directory
+RUN mkdir -p /home/ohsj3781/workspace
+
+# Download and extract NS-3
+RUN wget -O /tmp/ns-allinone-3.29.tar.bz2 https://www.nsnam.org/release/ns-allinone-3.29.tar.bz2 && \
+    tar -xvf /tmp/ns-allinone-3.29.tar.bz2 -C /tmp
+
+# Move NS-3 to workspace and change ownership
+RUN mv /tmp/ns-allinone-3.29 /home/ohsj3781/workspace/ && \
+    chown -R ohsj3781:ohsj3781 /home/ohsj3781/workspace/ns-allinone-3.29
+
+# Switch to user and build NS-3
 USER ohsj3781
-WORKDIR /home/ohsj3781
+WORKDIR /home/ohsj3781/workspace/ns-allinone-3.29
+RUN ./build.py --enable-examples --enable-tests
 
-
-# Set the default command to run when starting the container
+# Default to bash
 CMD ["bash"]
