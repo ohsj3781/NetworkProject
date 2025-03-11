@@ -4,14 +4,15 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        - USER_ID=${USER_ID}
         - USER_PASSWORD=${USER_PASSWORD}
       
     container_name: network_project_container
     image: network_project_image
     tty: true
     volumes:
-      - .:/home/ohsj3781/workspace
-    user: "ohsj3781"
+      - .:/home/${USER_ID}/workspace
+    user: "${USER_ID}"
     env_file:
       - .env
    
