@@ -16,13 +16,13 @@ NS_LOG_COMPONENT_DEFINE("Assignment 01");
 
 static double g_bytesFlow1=0;
 static double g_bytesFlow2=0;
-static double g_bytesFlow3=0;
+static double g_bytesFlowBack=0;
 
 
 static void
 Rxtime (std::string context,Ptr<const Packet> p,const Address &a)
 {
-    static double bytes1, bytes2, bytes3=0;
+    // static double bytes1, bytes2, bytes3=0;
     if (context=="Flow1"){
         // bytes1+=p->GetSize();
         g_bytesFlow1+=p->GetSize();
@@ -34,8 +34,8 @@ Rxtime (std::string context,Ptr<const Packet> p,const Address &a)
         // NS_LOG_UNCOND("2\t"<<Simulator::Now().GetSeconds()
         // <<"\t"<<bytes2*8/1000000/(Simulator::Now().GetSeconds()-12));
     }
-    else if(context=="Flow3"){
-        g_bytesFlow3+=p->GetSize();
+    else if(context=="FlowBack"){
+        g_bytesFlowBack+=p->GetSize();
         // NS_LOG_UNCOND("3\t"<<Simulator::Now().GetSeconds()
         // <<"\t"<<bytes3*8/1000000/(Simulator::Now().GetSeconds()-4));
     }
@@ -49,7 +49,24 @@ void MeasureThroughput(){
 
     double thrFlow1=g_bytesFlow1*8/elapsed/1000000;
     double thrFlow2=g_bytesFlow2*8/elapsed/1000000;
-    double thrFlow3=g_bytesFlow3*8/elapsed/1000000;
+    double thrFlow3=g_bytesFlowBack*8/elapsed/1000000;
+
+    if(thrFlow1>0){
+    NS_LOG_UNCOND("1\t"<<Simulator::Now().GetSeconds()
+    <<"\t"<<thrFlow1);}
+    if(thrFlow2>0){
+    NS_LOG_UNCOND("2\t"<<Simulator::Now().GetSeconds()
+    <<"\t"<<thrFlow2);}
+    if(thrFlow3>0){
+    NS_LOG_UNCOND("Back\t"<<Simulator::Now().GetSeconds()
+    <<"\t"<<thrFlow3);}
+
+    g_bytesFlow1=0;
+    g_bytesFlow2=0;
+    g_bytesFlowBack=0;
+    g_lastTime=now;
+
+    Simulator::Schedule(Seconds(0.1),&MeasureThroughput);
 }
 
 int main(int argc, char* argv[]){
@@ -93,6 +110,7 @@ int main(int argc, char* argv[]){
     PointToPointHelper pointToPoint;
     pointToPoint.SetDeviceAttribute("DataRate",StringValue("50Mbps"));
     pointToPoint.SetChannelAttribute("Delay",TimeValue(MilliSeconds(10)));
+   
 
     NetDeviceContainer p2pDevices;
     p2pDevices=pointToPoint.Install(p2pNodes);
@@ -127,9 +145,9 @@ int main(int argc, char* argv[]){
     NS_LOG_INFO("Create Application");
     uint16_t port=9;
     OnOffHelper onoff("ns3::UdpSocketFactory",
-        Address(InetSocketAddress(Ipv4Address(link1Interfaces.GetAddress(0)),port+1)));
+        Address(InetSocketAddress(Ipv4Address(link1Interfaces.GetAddress(0)),port)));
         onoff.SetAttribute("DataRate",DataRateValue(70000000));
-        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=1.0]"));
+        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=9999]"));
         onoff.SetAttribute("OffTime",StringValue("ns3::ConstantRandomVariable[Constant=0.0]"));
     
     ApplicationContainer app1=onoff.Install(link2Nodes.Get(0));
@@ -138,9 +156,9 @@ int main(int argc, char* argv[]){
     
     
     onoff.SetAttribute("Remote",
-        AddressValue(InetSocketAddress(Ipv4Address(link1Interfaces.GetAddress(0)),port)));
+        AddressValue(InetSocketAddress(Ipv4Address(link1Interfaces.GetAddress(0)),port+1)));
         onoff.SetAttribute("DataRate",DataRateValue(90000000));
-        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=1.0]"));
+        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=9999]"));
         onoff.SetAttribute("OffTime",StringValue("ns3::ConstantRandomVariable[Constant=0.0]"));
     
     ApplicationContainer app2=onoff.Install(link0Nodes.Get(0));
@@ -149,9 +167,9 @@ int main(int argc, char* argv[]){
     
 
     onoff.SetAttribute("Remote",
-        AddressValue(InetSocketAddress(Ipv4Address(link0Interfaces.GetAddress(0)),port)));
+        AddressValue(InetSocketAddress(Ipv4Address(link0Interfaces.GetAddress(0)),port+2)));
         onoff.SetAttribute("DataRate",DataRateValue(100000000));
-        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=1.0]"));
+        onoff.SetAttribute("OnTime",StringValue("ns3::ConstantRandomVariable[Constant=9999]"));
         onoff.SetAttribute("OffTime",StringValue("ns3::ConstantRandomVariable[Constant=0.0]"));
 
     ApplicationContainer app3=onoff.Install(link3Nodes.Get(0));
@@ -159,27 +177,28 @@ int main(int argc, char* argv[]){
     app3.Stop(Seconds(28.0));
 
     PacketSinkHelper sinkBack("ns3::UdpSocketFactory",
-        Address(InetSocketAddress(Ipv4Address::GetAny(),port+1)));
+        Address(InetSocketAddress(Ipv4Address::GetAny(),port)));
     ApplicationContainer sinkApp1=sinkBack.Install(link1Nodes.Get(0));
     sinkApp1.Start(Seconds(4));
-    sinkApp1.Get(0)->TraceConnect("Rx","Flow3",MakeCallback(&Rxtime));
+    sinkApp1.Get(0)->TraceConnect("Rx","FlowBack",MakeCallback(&Rxtime));
 
     PacketSinkHelper sink1("ns3::UdpSocketFactory",
-        Address(InetSocketAddress(Ipv4Address::GetAny(),port)));
+        Address(InetSocketAddress(Ipv4Address::GetAny(),port+1)));
     ApplicationContainer sinkApp2=sink1.Install(link1Nodes.Get(0));
     sinkApp2.Start(Seconds(10));
     sinkApp2.Get(0)->TraceConnect("Rx","Flow1",MakeCallback(&Rxtime));
 
     PacketSinkHelper sink2("ns3::UdpSocketFactory",
-        Address(InetSocketAddress(Ipv4Address::GetAny(),port)));
+        Address(InetSocketAddress(Ipv4Address::GetAny(),port+2)));
      ApplicationContainer sinkApp3=sink2.Install(link0Nodes.Get(0));
     sinkApp3.Start(Seconds(12));
     sinkApp3.Get(0)->TraceConnect("Rx","Flow2",MakeCallback(&Rxtime));
+    
     csma.EnablePcapAll("assignment01");
-
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
  
+    Simulator::Schedule(Seconds(0.1),&MeasureThroughput);
   
     NS_LOG_INFO("Run Simulation.");
     Simulator::Stop(Seconds(30));
