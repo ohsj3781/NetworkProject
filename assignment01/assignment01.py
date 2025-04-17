@@ -33,7 +33,7 @@ plt.plot(flow1_time, flow1_value, label='Flow1', marker='o', linestyle='-')
 plt.plot(flow2_time, flow2_value, label='Flow2', marker='o', linestyle='-')
 plt.plot(flowBack_time,flowBack_value, label='BackgroupndFlow', marker='o', linestyle='-')
 
-plt.title('2020314916')
+plt.title('2020314916\nScenario 03')
 plt.xlabel('Time')
 plt.ylabel('Value')
 
