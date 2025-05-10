@@ -205,13 +205,13 @@ main (int argc, char *argv[])
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("50ms"));
 
   NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
 
   Ptr<RateErrorModel> em = CreateObject<RateErrorModel> ();
-  em->SetAttribute ("ErrorRate", DoubleValue (0.001));
+  em->SetAttribute ("ErrorRate", DoubleValue (0.00001));
   devices.Get (1)->SetAttribute ("ReceiveErrorModel", PointerValue (em));
 
   InternetStackHelper stack;
@@ -230,9 +230,9 @@ main (int argc, char *argv[])
 
   Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (nodes.Get (0), TcpSocketFactory::GetTypeId ());
 
-  // uint32_t max=4294967295; //week10
+  uint32_t max=4294967295; //week10
   Ptr<MyApp> app = CreateObject<MyApp> ();
-  app->Setup (ns3TcpSocket, sinkAddress, 1040, 1000, DataRate ("1Mbps"));
+  app->Setup (ns3TcpSocket, sinkAddress, 1040, max, DataRate ("1Mbps"));
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (1.));
   app->SetStopTime (Seconds (20.));
