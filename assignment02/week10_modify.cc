@@ -235,7 +235,7 @@ main (int argc, char *argv[])
   app->Setup (ns3TcpSocket, sinkAddress, 1040, max, DataRate ("4Mbps"));
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (1.));
-  app->SetStopTime (Seconds (40.));
+  app->SetStopTime (Seconds (20.));
 
   AsciiTraceHelper asciiTraceHelper;
   Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream ("A.cwnd");
@@ -246,10 +246,20 @@ main (int argc, char *argv[])
   app2->Setup(ns3TcpSocket2,sinkAddress,1040,max,DataRate("4Mbps"));
   nodes.Get(0)->AddApplication(app2);
   app2->SetStartTime(Seconds(5.));
-  app2->SetStopTime(Seconds(40.0));
+  app2->SetStopTime(Seconds(20.));
 
   Ptr<OutputStreamWrapper> stream2 = asciiTraceHelper.CreateFileStream("B.cwnd");
   ns3TcpSocket2->TraceConnectWithoutContext("CongestionWindow",MakeBoundCallback(&CwndChange,stream2));
+
+  Ptr<Socket> ns3TcpSocket3=Socket::CreateSocket(nodes.Get(0),TcpSocketFactory::GetTypeId());
+  Ptr<MyApp> app3=CreateObject<MyApp>();
+  app3->Setup(ns3TcpSocket3,sinkAddress,1040,max,DataRate("4Mbps"));
+  nodes.Get(0)->AddApplication(app3);
+  app3->SetStartTime(Seconds(10.));
+  app3->SetStopTime(Seconds(20.));
+
+  Ptr<OutputStreamWrapper> stream3=asciiTraceHelper.CreateFileStream("C.cwnd");
+  ns3TcpSocket3->TraceConnectWithoutContext("CongestionWindow",MakeBoundCallback(&CwndChange,stream3));
 
   PcapHelper pcapHelper;
   Ptr<PcapFileWrapper> file = pcapHelper.CreateFile ("sixth.pcap", std::ios::out, PcapHelper::DLT_PPP);
@@ -259,7 +269,7 @@ main (int argc, char *argv[])
   FlowMonitorHelper flowHelper;
   flowMonitor=flowHelper.InstallAll();
 
-  Simulator::Stop (Seconds (40));
+  Simulator::Stop (Seconds (20));
   Simulator::Run ();
   Simulator::Destroy ();
 
@@ -280,4 +290,3 @@ main (int argc, char *argv[])
   flowMonitor->SerializeToXmlFile("monitorFile.xml",true,true);
   return 0;
 }
-

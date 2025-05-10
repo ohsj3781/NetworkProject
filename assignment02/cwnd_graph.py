@@ -29,7 +29,7 @@ def gen_fig():
     return fig
 
 app.layout = html.Div(id='parent', children=[
-    html.H1(id='H1', children='TCP Fairness 2020314916 오승재', style={'textAlign':'center',
+    html.H1(id='H1', children='TCP Fairness 3 flows 2020314916 오승재', style={'textAlign':'center',
                                                                  'marginTop':40, 'marginBottom':40}),
     dcc.Graph(id='line_plot', figure=gen_fig())
 ])
