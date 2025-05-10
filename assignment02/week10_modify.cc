@@ -196,16 +196,16 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
   
-  // std::string transport_prot="ns3::TcpNewReno";
-  std::string transport_prot="ns3::TcpBic";
-  Config::SetDefault("ns3::TcpL4Protocol::SocketType",TypeIdValue(TypeId::LookupByName(transport_prot)));
+  std::string transport_prot="ns3::TcpNewReno";
+  // std::string transport_prot="ns3::TcpBic";
+  // Config::SetDefault("ns3::TcpL4Protocol::SocketType",TypeIdValue(TypeId::LookupByName(transport_prot)));
 
   NodeContainer nodes;
   nodes.Create (2);
 
   PointToPointHelper pointToPoint;
   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("50ms"));
+  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer devices;
   devices = pointToPoint.Install (nodes);
@@ -232,14 +232,24 @@ main (int argc, char *argv[])
 
   uint32_t max=4294967295; //week10
   Ptr<MyApp> app = CreateObject<MyApp> ();
-  app->Setup (ns3TcpSocket, sinkAddress, 1040, max, DataRate ("1Mbps"));
+  app->Setup (ns3TcpSocket, sinkAddress, 1040, max, DataRate ("4Mbps"));
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (1.));
-  app->SetStopTime (Seconds (20.));
+  app->SetStopTime (Seconds (40.));
 
   AsciiTraceHelper asciiTraceHelper;
-  Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream ("sixth.cwnd");
+  Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream ("A.cwnd");
   ns3TcpSocket->TraceConnectWithoutContext ("CongestionWindow", MakeBoundCallback (&CwndChange, stream));
+
+  Ptr<Socket> ns3TcpSocket2=Socket::CreateSocket(nodes.Get(0),TcpSocketFactory::GetTypeId());
+  Ptr<MyApp> app2=CreateObject<MyApp>();
+  app2->Setup(ns3TcpSocket2,sinkAddress,1040,max,DataRate("4Mbps"));
+  nodes.Get(0)->AddApplication(app2);
+  app2->SetStartTime(Seconds(5.));
+  app2->SetStopTime(Seconds(40.0));
+
+  Ptr<OutputStreamWrapper> stream2 = asciiTraceHelper.CreateFileStream("B.cwnd");
+  ns3TcpSocket2->TraceConnectWithoutContext("CongestionWindow",MakeBoundCallback(&CwndChange,stream2));
 
   PcapHelper pcapHelper;
   Ptr<PcapFileWrapper> file = pcapHelper.CreateFile ("sixth.pcap", std::ios::out, PcapHelper::DLT_PPP);
@@ -249,7 +259,7 @@ main (int argc, char *argv[])
   FlowMonitorHelper flowHelper;
   flowMonitor=flowHelper.InstallAll();
 
-  Simulator::Stop (Seconds (20));
+  Simulator::Stop (Seconds (40));
   Simulator::Run ();
   Simulator::Destroy ();
 
