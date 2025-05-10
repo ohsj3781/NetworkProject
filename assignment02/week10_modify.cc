@@ -197,8 +197,8 @@ main (int argc, char *argv[])
   cmd.Parse (argc, argv);
   
   // std::string transport_prot="ns3::TcpNewReno";
-  // std::string transport_prot="ns3::TcpBic";
-  // Config::SetDefault("ns3::TcpL4Protocol::SocketType",TypeIdValue(TypeId::LookupByName(transport_prot)));
+  std::string transport_prot="ns3::TcpBic";
+  Config::SetDefault("ns3::TcpL4Protocol::SocketType",TypeIdValue(TypeId::LookupByName(transport_prot)));
 
   NodeContainer nodes;
   nodes.Create (2);
@@ -245,15 +245,15 @@ main (int argc, char *argv[])
   Ptr<PcapFileWrapper> file = pcapHelper.CreateFile ("sixth.pcap", std::ios::out, PcapHelper::DLT_PPP);
   devices.Get (1)->TraceConnectWithoutContext ("PhyRxDrop", MakeBoundCallback (&RxDrop, file));
 
-  // Ptr<FlowMonitor> flowMonitor;
-  // FlowMonitorHelper flowHelper;
-  // flowMonitor=flowHelper.InstallAll();
+  Ptr<FlowMonitor> flowMonitor;
+  FlowMonitorHelper flowHelper;
+  flowMonitor=flowHelper.InstallAll();
 
   Simulator::Stop (Seconds (20));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  /*flowMonitor->CheckForLostPackets();
+  flowMonitor->CheckForLostPackets();
   Ptr<Ipv4FlowClassifier> classifier=DynamicCast<Ipv4FlowClassifier>(flowHelper.GetClassifier());
   FlowMonitor::FlowStatsContainer stats=flowMonitor->GetFlowStats();
   for(std::map<FlowId,FlowMonitor::FlowStats>::const_iterator i =stats.begin();i!=stats.end();++i){
@@ -267,7 +267,7 @@ main (int argc, char *argv[])
     - i->second.timeFirstRxPacket.GetSeconds())/1024/1024<<" Mbps\n";
     }
   }
-  flowMonitor->SerializeToXmlFile("monitorFile.xml",true,true);*/
+  flowMonitor->SerializeToXmlFile("monitorFile.xml",true,true);
   return 0;
 }
 
