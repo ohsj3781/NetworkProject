@@ -152,6 +152,12 @@ namespace ns3 {
 		m_packetLost = 0;
 		m_retransRecv = 0;
 ////////////////////////////////////
+
+	//////////////////////////////////// Added for Assn3
+	m_windowSize=10;
+	m_windowBase=m_seqNum;
+	m_rto=MilliSeconds(80);
+	////////////////////////////////////
 	}
 
 	UdpReliableEchoClient::~UdpReliableEchoClient()
@@ -162,6 +168,30 @@ namespace ns3 {
 		delete [] m_data;
 		m_data = 0;
 		m_dataSize = 0;
+
+	//////////////////////////////////// Added for Assn3
+		for(auto i=m_timers.begin();i!=m_timers.end();++i){
+			if(i->second.IsRunning()){
+				i->second.Cancel();
+			}
+		}
+		m_timers.clear();
+	////////////////////////////////////
+		
+
+
+		double dropRate=0.0;
+		double retransmitSuccessRate=0.0;
+
+		if(m_packetSent>0){
+			dropRate=(double)m_packetLost*100.0/m_packetSent;
+		}
+		if(m_packetRetrans>0){
+			retransmitSuccessRate=(double)m_retransRecv*100.0/m_packetRetrans;
+		}
+
+		std::cout<<"Packet Drop Rate: "<<dropRate<<"%"<<std::endl;
+		std::cout<<"Retransmission Success Rate: "<<retransmitSuccessRate<<"%"<<std::endl;
 	}
 
 	void 
@@ -370,6 +400,14 @@ namespace ns3 {
 
 		NS_ASSERT (m_sendEvent.IsExpired ());
 
+	//////////////////////////////////// Added for Assn3
+		//Windos is full, wait until windowBase move.
+		
+		if(m_seqNum-m_windowBase>=m_windowSize&&!m_retransmit){
+			ScheduleTransmit(m_interval);
+			return;
+		}
+	////////////////////////////////////
 		Ptr<Packet> p;
 		if (m_dataSize)
 		{
@@ -399,13 +437,27 @@ namespace ns3 {
 		//Add Sequence number to packet here
 		RdtHeader h;
 		if(!m_retransmit){
+			// NS_LOG_INFO("Packet Send:" << m_seqNum);
 			h.SetSeq(m_seqNum++);
 			m_packetSent++;
 		}
 		else{
-			NS_LOG_INFO("Packet Retrans:" << m_retransSeq);
-			h.SetSeq(m_retransSeq++);
-			m_packetRetrans++;
+	//////////////////////////////////// Added for Assn3
+			bool alreadyRetransmit=true;
+			if(m_retransmitPackets.find(m_retransSeq)==m_retransmitPackets.end()){
+				NS_LOG_INFO("Packet Retrans:" << m_retransSeq);
+				m_retransmitPackets.insert(m_retransSeq);
+				
+				h.SetSeq(m_retransSeq++);
+				m_packetRetrans++;
+				alreadyRetransmit=false;
+				
+			}
+			else{
+				++m_retransSeq;
+			}
+	////////////////////////////////////
+			
 			if(m_retransSeq == m_retransStop){
 				if(m_retransmissions.size() == 0){
 					m_retransmit = false;
@@ -417,7 +469,17 @@ namespace ns3 {
 					m_retransStop = tmp.second;
 				}
 			}
+			
+			if(alreadyRetransmit){
+				ScheduleTransmit(m_interval);
+				return;
+			}
 		}
+
+	//////////////////////////////////// Added for Assn3
+		EventId timerId=Simulator::Schedule(m_rto,&UdpReliableEchoClient::HandleTimeout,this,h.GetSeq());
+		m_timers[h.GetSeq()]=timerId;
+	//////////////////////////////////// Added for Assn3		
 		p->AddHeader(h);
 ////////////////////////////////////
 
@@ -492,23 +554,48 @@ namespace ns3 {
 		RdtHeader h;
 		packet->RemoveHeader(h);
 		uint16_t seq = h.GetSeq();
+	//////////////////////////////////// Added for Assn3
+		auto timerIt=m_timers.find(seq);
+		if(timerIt !=m_timers.end()){
+			timerIt->second.Cancel();
+			m_timers.erase(timerIt);
+		}
+		
+		m_receivedPackets.insert(seq);
+
+	////////////////////////////////////
+		
 		if(seq == m_ackNum){
 			//When received Correct Packet
 			m_ackNum++;
+			// NS_LOG_INFO("Receive Sent Packet:" << seq);
 		}
 		else if(seq > m_ackNum){
+			// NS_LOG_INFO("Receive Sent Packet:" << seq);
 			//When packet Loss
-			m_packetLost += (seq - m_ackNum);
-			NS_LOG_INFO("Packet Loss:" << seq);
-			if(!m_retransmit){
-				m_retransmit = true;
-				m_retransSeq = m_ackNum;
-				m_retransStop = seq;
+	//////////////////////////////////// Added for Assn3
+			for(uint16_t lostSeq=m_ackNum; lostSeq<seq; ++lostSeq){
+				if(m_receivedPackets.find(lostSeq)==m_receivedPackets.end()&&
+				   m_retransmitPackets.find(lostSeq)==m_retransmitPackets.end()){
+					NS_LOG_INFO("Packet Loss:"<<lostSeq);
+					++m_packetLost;
+					if(!m_retransmit){
+						m_retransmit=true;
+						m_retransSeq=lostSeq;
+						m_retransStop=lostSeq+1;
+					}
+					else{
+						std::pair<uint32_t,uint32_t> tmp={lostSeq,lostSeq+1};
+						m_retransmissions.push_back(tmp);
+					}
+					auto timerIt=m_timers.find(lostSeq);
+					if(timerIt !=m_timers.end()){
+							timerIt->second.Cancel();
+							m_timers.erase(timerIt);
+					}
+				}
 			}
-			else{
-				std::pair<uint16_t, uint16_t> tmp = {m_ackNum, seq};
-				m_retransmissions.push_back(tmp);
-			}
+			
 			m_ackNum = seq + 1;
 		}
 		else if(seq < m_ackNum){
@@ -516,12 +603,45 @@ namespace ns3 {
 			NS_LOG_INFO("Receive Retrans Packet:" << seq);
 			m_retransRecv++;
 		}
+		while(m_receivedPackets.find(m_windowBase)!=m_receivedPackets.end()){
+				++m_windowBase;
+		}
 ////////////////////////////////////
 
 			socket->GetSockName (localAddress);
 			m_rxTrace (packet);
 			m_rxTraceWithAddresses (packet, from, localAddress);
 		}
+	}
+
+	void
+	UdpReliableEchoClient::HandleTimeout(uint16_t seq){
+		NS_LOG_FUNCTION(this<<seq);
+
+		NS_LOG_INFO("Timeout:"<<seq);
+		NS_LOG_INFO("Packet Loss:"<<seq);
+
+		if(m_retransmitPackets.find(seq)==m_retransmitPackets.end()){
+			++m_packetLost;
+		}
+		else{
+			m_receivedPackets.insert(seq);
+			while(m_receivedPackets.find(m_windowBase)!=m_receivedPackets.end()){
+				++m_windowBase;
+			}
+			
+		}
+		if(!m_retransmit){
+			m_retransmit=true;
+			m_retransSeq=seq;
+			m_retransStop=seq+1;
+		}
+		else{
+			std::pair<int,int> tmp={seq,seq+1};
+			m_retransmissions.push_back(tmp);
+		}
+		m_timers.erase(seq);
+		return;
 	}
 
 } // Namespace ns3

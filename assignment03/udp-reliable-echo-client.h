@@ -25,6 +25,10 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/traced-callback.h"
 #include <vector>
+	//////////////////////////////////// Added for Assn3
+#include <map>
+#include <set>
+	////////////////////////////////////
 
 namespace ns3 {
 
@@ -158,6 +162,10 @@ namespace ns3 {
 			 */
 			void HandleRead (Ptr<Socket> socket);
 
+	//////////////////////////////////// Added for Assn3
+			void HandleTimeout(uint16_t seq);
+	//////////////////////////////////// 
+
 			uint32_t m_count; //!< Maximum number of packets the application will send
 			Time m_interval; //!< Packet inter-send time
 			uint32_t m_size; //!< Size of the sent packet
@@ -184,6 +192,14 @@ namespace ns3 {
 			std::vector<std::pair<uint16_t, uint16_t>> m_retransmissions;
 ////////////////////////////////////
 
+	//////////////////////////////////// Added for Assn3
+			uint32_t m_windowSize;
+			uint32_t m_windowBase;
+			Time m_rto;
+			std::map<uint16_t,EventId> m_timers;
+			std::set<uint16_t> m_receivedPackets;
+			std::set<uint16_t> m_retransmitPackets;
+	//////////////////////////////////// 
 			/// Callbacks for tracing the packet Tx events
 			TracedCallback<Ptr<const Packet> > m_txTrace;
 
