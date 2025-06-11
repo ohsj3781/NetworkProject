@@ -9,10 +9,35 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/udp-reliable-echo-helper.h"
+#include "ns3/flow-monitor-module.h"
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("Assn3");
+
+static void
+TxTrace (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
+{
+  static uint32_t totalTxBytes = 0;
+  totalTxBytes += packet->GetSize();
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << totalTxBytes << std::endl;
+}
+
+static void
+RxTrace (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet, const Address &from)
+{
+  static uint32_t totalRxBytes = 0;
+  totalRxBytes += packet->GetSize();
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << totalRxBytes << std::endl;
+}
+
+
+static void
+CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+{
+  NS_LOG_UNCOND (Simulator::Now ().GetSeconds () << "\t" << newCwnd);
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldCwnd << "\t" << newCwnd << std::endl;
+}
 
 int main (int argc, char *argv[])
 {
@@ -68,7 +93,13 @@ int main (int argc, char *argv[])
   serverApps.Start (Seconds (0.0));
   serverApps.Stop (Seconds (61.0));
   
-  // Create and configure UdpReliableEchoClient on node 0
+  // Create and configure UdpReliableEchoClient on node 0 
+
+  AsciiTraceHelper asciiTraceHelper;
+  Ptr<OutputStreamWrapper> echoClientStream=asciiTraceHelper.CreateFileStream("Assn3.cwnd");
+  ns3EchoClientSocket->TraceConnectWithoutContext("CongestionWindow",MakeBoundCallback(&CwndChange,echoClientStream));
+
+
   UdpReliableEchoClientHelper echoClient (reliableAddress, echoPort);
   echoClient.SetAttribute ("MaxPackets", UintegerValue (1000000));
   echoClient.SetAttribute ("Interval", TimeValue (Seconds (0.0001)));
@@ -96,11 +127,35 @@ int main (int argc, char *argv[])
   ApplicationContainer sinkApps = packetSinkHelper.Install (nodes.Get (3));
   sinkApps.Start (Seconds (0.0));
   sinkApps.Stop (Seconds (61.0));
+
   
+  Ptr<FlowMonitor> flowMonitor;
+  FlowMonitorHelper flowHelper;
+  flowMonitor = flowHelper.InstallAll();
+
   // Run simulation
   Simulator::Stop (Seconds (63.0));
   Simulator::Run ();
   Simulator::Destroy ();
+
+  flowMonitor->CheckForLostPackets();
+  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowHelper.GetClassifier());
+  FlowMonitor::FlowStatsContainer stats=flowMonitor->GetFlowStats();
+  for(std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i =stats.begin();i!=stats.end();++i){
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(i->first);
+    if(t.destinationAddress=="10.1.1.1"){
+      std::cout <<  "Flow " <<  i->first  <<  "(" <<  t.sourceAddress
+                <<  " -> "  <<  t.destinationAddress << ")\n";
+      std::cout << " Tx Bytes: "<<i->second.txBytes<<"\n";
+      std::cout << " Rx Bytes:  "<<i->second.rxBytes<<"\n";
+      std::cout << " Throughput: "
+                <<   i->second.rxBytes*8.0/(i->second.timeLastRxPacket.GetSeconds()\
+                      - i->second.timeFirstRxPacket.GetSeconds())/1024/1024<<"  Mbps\n";
+    }
+  }
+  flowMonitor->SerializeToXmlFile("assn3MonitorFile.xml",true,true);
+
+
   
   return 0;
 }
