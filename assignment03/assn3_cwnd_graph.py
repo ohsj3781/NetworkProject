@@ -25,7 +25,7 @@ def gen_fig():
         objs.append(obj)
     fig = go.Figure(objs)
     fig.update_layout(xaxis_title='Time',
-                      yaxis_title='CWND')
+                      yaxis_title='')
     return fig
 
 app.layout = html.Div(id='parent', children=[
