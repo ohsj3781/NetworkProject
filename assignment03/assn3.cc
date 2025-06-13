@@ -15,6 +15,22 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("Assn3");
 
+// static void
+// TxTrace (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet)
+// {
+//   static uint32_t totalTxBytes = 0;
+//   totalTxBytes += packet->GetSize();
+//   *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << totalTxBytes << std::endl;
+// }
+
+// static void
+// RxTrace (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> packet, const Address &from)
+// {
+//   static uint32_t totalRxBytes = 0;
+//   totalRxBytes += packet->GetSize();
+//   *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << totalRxBytes << std::endl;
+// }
+
 int main (int argc, char *argv[])
 {
   CommandLine cmd;
@@ -79,6 +95,11 @@ int main (int argc, char *argv[])
   ApplicationContainer clientApps = echoClient.Install (nodes.Get (0));
   clientApps.Start (Seconds (1.0));
   clientApps.Stop (Seconds (60.0));
+
+  AsciiTraceHelper asciiTraceHelper;
+  Ptr<OutputStreamWrapper> sentStream= asciiTraceHelper.CreateFileStream("sent.txt");
+
+  
   
   // Create and configure OnOffApplication on node 0
   uint16_t onoffPort = 10;
@@ -99,10 +120,32 @@ int main (int argc, char *argv[])
   sinkApps.Start (Seconds (0.0));
   sinkApps.Stop (Seconds (61.0));
 
+  
+  // Ptr<FlowMonitor> flowMonitor;
+  // FlowMonitorHelper flowHelper;
+  // flowMonitor = flowHelper.InstallAll();
+
   // Run simulation
   Simulator::Stop (Seconds (63.0));
   Simulator::Run ();
   Simulator::Destroy ();
-  
+
+   /* flowMonitor->CheckForLostPackets();
+  Ptr<Ipv4FlowClassifier> classifier = DynamicCast<Ipv4FlowClassifier> (flowHelper.GetClassifier());
+  FlowMonitor::FlowStatsContainer stats=flowMonitor->GetFlowStats();
+  for(std::map<FlowId, FlowMonitor::FlowStats>::const_iterator i =stats.begin();i!=stats.end();++i){
+    Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(i->first);
+    if(t.destinationAddress=="10.1.1.1"){
+      std::cout <<  "Flow " <<  i->first  <<  "(" <<  t.sourceAddress
+                <<  " -> "  <<  t.destinationAddress << ")\n";
+      std::cout << " Tx Bytes: "<<i->second.txBytes<<"\n";
+      std::cout << " Rx Bytes:  "<<i->second.rxBytes<<"\n";
+      std::cout << " Throughput: "
+                <<   i->second.rxBytes*8.0/(i->second.timeLastRxPacket.GetSeconds()\
+                      - i->second.timeFirstRxPacket.GetSeconds())/1024/1024<<"  Mbps\n";
+    }
+  }
+  flowMonitor->SerializeToXmlFile("assn3MonitorFile.xml",true,true); */
+ 
   return 0;
 }

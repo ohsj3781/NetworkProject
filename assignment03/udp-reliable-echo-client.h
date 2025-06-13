@@ -164,6 +164,8 @@ namespace ns3 {
 
 	//////////////////////////////////// Added for Assn3
 			void HandleTimeout(uint16_t seq);
+			void PpsLog(void);
+			void SchedulePpsLog(Time dt);
 	//////////////////////////////////// 
 
 			uint32_t m_count; //!< Maximum number of packets the application will send
@@ -196,6 +198,8 @@ namespace ns3 {
 			uint32_t m_windowSize;
 			uint32_t m_windowBase;
 			Time m_rto;
+
+			EventId m_logEvent;
 			std::map<uint16_t,EventId> m_timers;
 			std::set<uint16_t> m_receivedPackets;
 			std::set<uint16_t> m_retransmitPackets;

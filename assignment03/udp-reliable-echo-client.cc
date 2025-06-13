@@ -168,15 +168,6 @@ namespace ns3 {
 		delete [] m_data;
 		m_data = 0;
 		m_dataSize = 0;
-
-	//////////////////////////////////// Added for Assn3
-		for(auto i=m_timers.begin();i!=m_timers.end();++i){
-			if(i->second.IsRunning()){
-				i->second.Cancel();
-			}
-		}
-		m_timers.clear();
-	////////////////////////////////////
 		
 
 
@@ -265,6 +256,7 @@ namespace ns3 {
 
 		m_socket->SetRecvCallback (MakeCallback (&UdpReliableEchoClient::HandleRead, this));
 		m_socket->SetAllowBroadcast (true);
+		SchedulePpsLog (Seconds(0.));
 		ScheduleTransmit (Seconds (0.));
 	}
 
@@ -280,7 +272,19 @@ namespace ns3 {
 			m_socket = 0;
 		}
 
+	//////////////////////////////////// Added for Assn3
+		for(auto i=m_timers.begin();i!=m_timers.end();++i){
+			if(i->second.IsRunning()){
+				i->second.Cancel();
+			}
+		}
+		m_timers.clear();
+
+		Simulator::Cancel (m_logEvent);
+		PpsLog();
+	////////////////////////////////////
 		Simulator::Cancel (m_sendEvent);
+		Simulator::Cancel (m_logEvent);
 	}
 
 	void 
@@ -437,7 +441,7 @@ namespace ns3 {
 		//Add Sequence number to packet here
 		RdtHeader h;
 		if(!m_retransmit){
-			// NS_LOG_INFO("Packet Send:" << m_seqNum);
+			NS_LOG_INFO("Packet Send:\t" << m_seqNum);
 			h.SetSeq(m_seqNum++);
 			m_packetSent++;
 		}
@@ -445,7 +449,7 @@ namespace ns3 {
 	//////////////////////////////////// Added for Assn3
 			bool alreadyRetransmit=true;
 			if(m_retransmitPackets.find(m_retransSeq)==m_retransmitPackets.end()){
-				NS_LOG_INFO("Packet Retrans:" << m_retransSeq);
+				NS_LOG_INFO("Packet Retrans:\t" << m_retransSeq);
 				m_retransmitPackets.insert(m_retransSeq);
 				
 				h.SetSeq(m_retransSeq++);
@@ -568,16 +572,14 @@ namespace ns3 {
 		if(seq == m_ackNum){
 			//When received Correct Packet
 			m_ackNum++;
-			// NS_LOG_INFO("Receive Sent Packet:" << seq);
 		}
 		else if(seq > m_ackNum){
-			// NS_LOG_INFO("Receive Sent Packet:" << seq);
 			//When packet Loss
 	//////////////////////////////////// Added for Assn3
 			for(uint16_t lostSeq=m_ackNum; lostSeq<seq; ++lostSeq){
 				if(m_receivedPackets.find(lostSeq)==m_receivedPackets.end()&&
 				   m_retransmitPackets.find(lostSeq)==m_retransmitPackets.end()){
-					NS_LOG_INFO("Packet Loss:"<<lostSeq);
+					NS_LOG_INFO("Packet Loss:\t"<<lostSeq);
 					++m_packetLost;
 					if(!m_retransmit){
 						m_retransmit=true;
@@ -600,7 +602,7 @@ namespace ns3 {
 		}
 		else if(seq < m_ackNum){
 			//Need to retransmission
-			NS_LOG_INFO("Receive Retrans Packet:" << seq);
+			NS_LOG_INFO("Receive Retrans Packet:\t" << seq);
 			m_retransRecv++;
 		}
 		while(m_receivedPackets.find(m_windowBase)!=m_receivedPackets.end()){
@@ -618,8 +620,8 @@ namespace ns3 {
 	UdpReliableEchoClient::HandleTimeout(uint16_t seq){
 		NS_LOG_FUNCTION(this<<seq);
 
-		NS_LOG_INFO("Timeout:"<<seq);
-		NS_LOG_INFO("Packet Loss:"<<seq);
+		NS_LOG_INFO("Timeout:\t"<<seq);
+		NS_LOG_INFO("Packet Loss:\t"<<seq);
 
 		if(m_retransmitPackets.find(seq)==m_retransmitPackets.end()){
 			++m_packetLost;
@@ -642,6 +644,34 @@ namespace ns3 {
 		}
 		m_timers.erase(seq);
 		return;
+	}
+
+	void
+	UdpReliableEchoClient::PpsLog(void){
+		static uint32_t oldPacketSent=0;
+		static uint32_t oldPacketLost=0;
+		static uint32_t oldPacketRetrans=0;
+
+		uint32_t nowPacketSent=m_packetSent;
+		uint32_t nowPacketLost=m_packetLost;
+		uint32_t nowPacketRetrans=m_packetRetrans;
+		
+		std::cout	<<"Time:\t"<<Simulator::Now().GetSeconds()<<std::endl;
+		std::cout	<<"PacketSent PPS:\t"<<nowPacketSent-oldPacketSent<<"\t"<<Simulator::Now().GetSeconds()<<std::endl;
+		std::cout	<<"PacketLost PPS:\t"<<nowPacketLost-oldPacketLost<<"\t"<<Simulator::Now().GetSeconds()<<std::endl;
+		std::cout	<<"PacketRetrans PPS:\t"<<nowPacketRetrans-oldPacketRetrans<<"\t"<<Simulator::Now().GetSeconds()<<std::endl;
+		
+		oldPacketSent=nowPacketSent;
+		oldPacketLost=nowPacketLost;
+		oldPacketRetrans=nowPacketRetrans;
+		
+		SchedulePpsLog(Seconds(1.0));
+	}
+
+	void
+	UdpReliableEchoClient::SchedulePpsLog (Time dt){
+		NS_LOG_FUNCTION(this<<dt);
+		m_logEvent=Simulator::Schedule (dt, &UdpReliableEchoClient::PpsLog, this);
 	}
 
 } // Namespace ns3

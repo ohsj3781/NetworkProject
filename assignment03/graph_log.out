@@ -1,0 +1,246 @@
+Waf: Entering directory `/home/ohsj3781/workspace/NetworkProject/ns-allinone-3.29/ns-3.29/build'
+Waf: Leaving directory `/home/ohsj3781/workspace/NetworkProject/ns-allinone-3.29/ns-3.29/build'
+Build commands will be stored in build/compile_commands.json
+'build' finished successfully (2.491s)
+Time:	1
+PacketSent PPS:	0	1
+PacketLost PPS:	0	1
+PacketRetrans PPS:	0	1
+Time:	2
+PacketSent PPS:	88	2
+PacketLost PPS:	60	2
+PacketRetrans PPS:	60	2
+Time:	3
+PacketSent PPS:	82	3
+PacketLost PPS:	53	3
+PacketRetrans PPS:	53	3
+Time:	4
+PacketSent PPS:	80	4
+PacketLost PPS:	54	4
+PacketRetrans PPS:	54	4
+Time:	5
+PacketSent PPS:	67	5
+PacketLost PPS:	62	5
+PacketRetrans PPS:	62	5
+Time:	6
+PacketSent PPS:	87	6
+PacketLost PPS:	57	6
+PacketRetrans PPS:	57	6
+Time:	7
+PacketSent PPS:	97	7
+PacketLost PPS:	58	7
+PacketRetrans PPS:	58	7
+Time:	8
+PacketSent PPS:	71	8
+PacketLost PPS:	56	8
+PacketRetrans PPS:	56	8
+Time:	9
+PacketSent PPS:	81	9
+PacketLost PPS:	59	9
+PacketRetrans PPS:	59	9
+Time:	10
+PacketSent PPS:	91	10
+PacketLost PPS:	60	10
+PacketRetrans PPS:	60	10
+Time:	11
+PacketSent PPS:	81	11
+PacketLost PPS:	57	11
+PacketRetrans PPS:	57	11
+Time:	12
+PacketSent PPS:	75	12
+PacketLost PPS:	61	12
+PacketRetrans PPS:	61	12
+Time:	13
+PacketSent PPS:	86	13
+PacketLost PPS:	59	13
+PacketRetrans PPS:	59	13
+Time:	14
+PacketSent PPS:	90	14
+PacketLost PPS:	61	14
+PacketRetrans PPS:	61	14
+Time:	15
+PacketSent PPS:	66	15
+PacketLost PPS:	62	15
+PacketRetrans PPS:	62	15
+Time:	16
+PacketSent PPS:	94	16
+PacketLost PPS:	60	16
+PacketRetrans PPS:	60	16
+Time:	17
+PacketSent PPS:	81	17
+PacketLost PPS:	53	17
+PacketRetrans PPS:	53	17
+Time:	18
+PacketSent PPS:	71	18
+PacketLost PPS:	59	18
+PacketRetrans PPS:	59	18
+Time:	19
+PacketSent PPS:	88	19
+PacketLost PPS:	56	19
+PacketRetrans PPS:	56	19
+Time:	20
+PacketSent PPS:	86	20
+PacketLost PPS:	48	20
+PacketRetrans PPS:	48	20
+Time:	21
+PacketSent PPS:	78	21
+PacketLost PPS:	63	21
+PacketRetrans PPS:	63	21
+Time:	22
+PacketSent PPS:	78	22
+PacketLost PPS:	62	22
+PacketRetrans PPS:	62	22
+Time:	23
+PacketSent PPS:	81	23
+PacketLost PPS:	49	23
+PacketRetrans PPS:	49	23
+Time:	24
+PacketSent PPS:	76	24
+PacketLost PPS:	61	24
+PacketRetrans PPS:	61	24
+Time:	25
+PacketSent PPS:	71	25
+PacketLost PPS:	61	25
+PacketRetrans PPS:	61	25
+Time:	26
+PacketSent PPS:	85	26
+PacketLost PPS:	57	26
+PacketRetrans PPS:	57	26
+Time:	27
+PacketSent PPS:	81	27
+PacketLost PPS:	55	27
+PacketRetrans PPS:	55	27
+Time:	28
+PacketSent PPS:	71	28
+PacketLost PPS:	61	28
+PacketRetrans PPS:	61	28
+Time:	29
+PacketSent PPS:	93	29
+PacketLost PPS:	50	29
+PacketRetrans PPS:	50	29
+Time:	30
+PacketSent PPS:	80	30
+PacketLost PPS:	59	30
+PacketRetrans PPS:	58	30
+Time:	31
+PacketSent PPS:	69	31
+PacketLost PPS:	64	31
+PacketRetrans PPS:	64	31
+Time:	32
+PacketSent PPS:	85	32
+PacketLost PPS:	57	32
+PacketRetrans PPS:	57	32
+Time:	33
+PacketSent PPS:	82	33
+PacketLost PPS:	63	33
+PacketRetrans PPS:	63	33
+Time:	34
+PacketSent PPS:	81	34
+PacketLost PPS:	58	34
+PacketRetrans PPS:	58	34
+Time:	35
+PacketSent PPS:	67	35
+PacketLost PPS:	60	35
+PacketRetrans PPS:	60	35
+Time:	36
+PacketSent PPS:	79	36
+PacketLost PPS:	54	36
+PacketRetrans PPS:	54	36
+Time:	37
+PacketSent PPS:	91	37
+PacketLost PPS:	54	37
+PacketRetrans PPS:	54	37
+Time:	38
+PacketSent PPS:	62	38
+PacketLost PPS:	58	38
+PacketRetrans PPS:	58	38
+Time:	39
+PacketSent PPS:	89	39
+PacketLost PPS:	56	39
+PacketRetrans PPS:	56	39
+Time:	40
+PacketSent PPS:	82	40
+PacketLost PPS:	55	40
+PacketRetrans PPS:	54	40
+Time:	41
+PacketSent PPS:	71	41
+PacketLost PPS:	56	41
+PacketRetrans PPS:	56	41
+Time:	42
+PacketSent PPS:	78	42
+PacketLost PPS:	58	42
+PacketRetrans PPS:	57	42
+Time:	43
+PacketSent PPS:	85	43
+PacketLost PPS:	56	43
+PacketRetrans PPS:	54	43
+Time:	44
+PacketSent PPS:	75	44
+PacketLost PPS:	56	44
+PacketRetrans PPS:	56	44
+Time:	45
+PacketSent PPS:	76	45
+PacketLost PPS:	60	45
+PacketRetrans PPS:	60	45
+Time:	46
+PacketSent PPS:	89	46
+PacketLost PPS:	52	46
+PacketRetrans PPS:	52	46
+Time:	47
+PacketSent PPS:	80	47
+PacketLost PPS:	58	47
+PacketRetrans PPS:	57	47
+Time:	48
+PacketSent PPS:	73	48
+PacketLost PPS:	63	48
+PacketRetrans PPS:	63	48
+Time:	49
+PacketSent PPS:	87	49
+PacketLost PPS:	54	49
+PacketRetrans PPS:	54	49
+Time:	50
+PacketSent PPS:	91	50
+PacketLost PPS:	50	50
+PacketRetrans PPS:	50	50
+Time:	51
+PacketSent PPS:	69	51
+PacketLost PPS:	58	51
+PacketRetrans PPS:	58	51
+Time:	52
+PacketSent PPS:	84	52
+PacketLost PPS:	54	52
+PacketRetrans PPS:	52	52
+Time:	53
+PacketSent PPS:	84	53
+PacketLost PPS:	56	53
+PacketRetrans PPS:	56	53
+Time:	54
+PacketSent PPS:	72	54
+PacketLost PPS:	55	54
+PacketRetrans PPS:	55	54
+Time:	55
+PacketSent PPS:	81	55
+PacketLost PPS:	60	55
+PacketRetrans PPS:	60	55
+Time:	56
+PacketSent PPS:	90	56
+PacketLost PPS:	58	56
+PacketRetrans PPS:	58	56
+Time:	57
+PacketSent PPS:	84	57
+PacketLost PPS:	55	57
+PacketRetrans PPS:	55	57
+Time:	58
+PacketSent PPS:	72	58
+PacketLost PPS:	58	58
+PacketRetrans PPS:	58	58
+Time:	59
+PacketSent PPS:	79	59
+PacketLost PPS:	57	59
+PacketRetrans PPS:	57	59
+Time:	60
+PacketSent PPS:	91	60
+PacketLost PPS:	63	60
+PacketRetrans PPS:	63	60
+Packet Drop Rate: 71.2873%
+Retransmission Success Rate: 28.2461%
